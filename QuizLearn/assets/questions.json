@@ -1,0 +1,16 @@
+{
+  "questions": [
+      {
+          "question": "Qual é a capital da França?",
+          "options": ["Paris", "Londres", "Berlim", "Roma"],
+          "correct": "Paris",
+          "explanation": "Paris é a capital e maior cidade da França."
+      },
+      {
+          "question": "Qual é o maior oceano do mundo?",
+          "options": ["Oceano Atlântico", "Oceano Índico", "Oceano Pacífico", "Oceano Ártico"],
+          "correct": "Oceano Pacífico",
+          "explanation": "O Oceano Pacífico é o maior oceano do mundo, cobrindo uma área de aproximadamente 63 milhões de milhas quadradas."
+      }
+  ]
+}
