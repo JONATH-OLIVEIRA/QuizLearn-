@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Inicial</title>
+</head>
+<body>
+    <h1>Bem-vindo ao ConvitePlus</h1>
+    
+    <div id="login-container">
+        <h2>Login do Anfitrião</h2>
+        
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" required>
+        
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" required>
+        
+        <button onclick="fazerLogin()">Entrar</button>
+        <button onclick="irParaCadastro()">Criar Anfitrião</button>
+    </div>
+
+    <script>
+        function fazerLogin() {
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+            
+            if (!email || !senha) {
+                alert("Por favor, preencha todos os campos!");
+                return;
+            }
+
+            // Requisição para fazer login
+            fetch(`/api/anfitrioes/login?email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`, {
+                method: 'GET',  // Mudança para GET
+            })
+                .then(response => {
+                    if (response.ok) {
+                        response.json().then(data => {
+                            const eventoId = data.eventoId;  // A URL agora conterá o eventoId
+                            if (eventoId) {
+                                // Redirecionar para a página de resumo do evento com eventoId
+                                window.location.href = `/evento/resumo?eventoId=${eventoId}`;
+                            } else {
+                                alert("Evento não encontrado para o anfitrião.");
+                            }
+                        });
+                    } else {
+                        // Mostrar a mensagem de erro conforme o código de resposta
+                        response.text().then(message => {
+                            alert(`Erro: ${message}`);
+                        });
+                    }
+                })
+                .catch(error => {
+                    // Em caso de erro de conexão ou outro erro inesperado
+                    console.error("Erro no login:", error);
+                    alert("Ocorreu um erro ao tentar fazer login. Tente novamente.");
+                });
+        }
+
+        function irParaCadastro() {
+            // Redirecionar para a página de cadastro de anfitrião
+            window.location.href = "/anfitriao/novo";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convite</title>
+    <script>
+        function responderConvite(aceitou) {
+            const nome = document.getElementById("nome").value;
+            const telefone = document.getElementById("telefone").value;
+            const codigoConvite = new URLSearchParams(window.location.search).get("codigo");
+            
+            if (!aceitou) {
+                alert("Você recusou o convite. A página será fechada.");
+                window.location.href = "/";
+                return;
+            }
+
+            if (!nome || !telefone) {
+                alert("Por favor, preencha todos os campos!");
+                return;
+            }
+
+            const data = { nome, telefone, aceitouConvite: aceitou };
+
+            fetch(`/api/eventos/accept/${codigoConvite}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao aceitar o convite");
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert("Convite aceito com sucesso!");
+                if (data.eventoId) {
+                    window.location.href = `/evento/resumo?eventoId=${data.eventoId}`;
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+                alert("Ocorreu um erro ao processar sua resposta. Tente novamente.");
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Convite para Evento</h1>
+    <p>Preencha seu nome e telefone para responder ao convite</p>
+    <form id="form-convite">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" required><br><br>
+
+        <label for="telefone">Telefone:</label>
+        <input type="text" id="telefone" required><br><br>
+
+        <button type="button" onclick="responderConvite(true)">Aceitar Convite</button>
+        <button type="button" onclick="responderConvite(false)">Recusar Convite</button>
+    </form>
+</body>
+</html>

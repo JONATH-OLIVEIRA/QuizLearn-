@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Painel de Controle</h1>
+        <button onclick="logout()">Sair</button>
+    </header>
+    
+    <section>
+        <h2>Seus Eventos</h2>
+        <button onclick="criarNovoEvento()">Criar Novo Evento</button>
+        <ul id="listaEventos"></ul>
+    </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", carregarEventos);
+
+        function carregarEventos() {
+            const anfitriaoId = localStorage.getItem("anfitriaoId");
+            if (!anfitriaoId) {
+                alert("Erro: Usuário não autenticado. Redirecionando para login...");
+                window.location.href = "login.html";
+                return;
+            }
+
+            fetch(`/api/anfitrioes/${anfitriaoId}/eventos`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Erro ao buscar eventos.");
+                    return response.json();
+                })
+                .then(eventos => {
+                    const listaEventos = document.getElementById("listaEventos");
+                    listaEventos.innerHTML = "";
+                    
+                    if (eventos.length === 0) {
+                        listaEventos.innerHTML = "<p>Nenhum evento cadastrado.</p>";
+                        return;
+                    }
+
+                    eventos.forEach(evento => {
+                        const li = document.createElement("li");
+                        li.innerHTML = `
+                            <strong>${evento.nomeEvento}</strong>
+                            <button onclick="editarEvento(${evento.id})">Editar</button>
+                            <button onclick="verConvidados(${evento.id})">Ver Convidados</button>
+                            <button onclick="deletarEvento(${evento.id})">Excluir</button>
+                        `;
+                        listaEventos.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error("Erro ao carregar eventos:", error);
+                    alert("Erro ao carregar eventos. Tente novamente mais tarde.");
+                });
+        }
+
+        function criarNovoEvento() {
+            const anfitriaoId = localStorage.getItem("anfitriaoId");
+            if (!anfitriaoId) {
+                alert("Erro: ID do anfitrião não encontrado. Faça login novamente.");
+                return;
+            }
+            window.location.href = `/evento/novo?anfitriaoId=${anfitriaoId}`;
+        }
+
+        function editarEvento(eventoId) {
+            window.location.href = `editar_evento.html?eventoId=${eventoId}`;
+        }
+
+        function verConvidados(eventoId) {
+            window.location.href = `convidados.html?eventoId=${eventoId}`;
+        }
+
+        function deletarEvento(eventoId) {
+            if (confirm("Tem certeza que deseja excluir este evento?")) {
+                fetch(`/api/eventos/${eventoId}`, { method: "DELETE" })
+                    .then(response => {
+                        if (!response.ok) throw new Error("Erro ao excluir evento.");
+                        carregarEventos();
+                    })
+                    .catch(error => {
+                        console.error("Erro ao excluir evento:", error);
+                        alert("Erro ao excluir evento. Tente novamente mais tarde.");
+                    });
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("anfitriaoId");
+            window.location.href = "/";
+        }
+    </script>
+</body>
+</html>

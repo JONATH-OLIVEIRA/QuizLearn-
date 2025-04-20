@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Resumo do Evento</title>
+</head>
+
+<body>
+	<h1>Resumo do Evento</h1>
+
+	<h2>Dados do Evento</h2>
+	<p><strong>Nome do Evento:</strong> <span id="nomeEvento"></span></p>
+	<p><strong>Endereço do Evento:</strong> <span id="enderecoEvento"></span></p>
+	<p><strong>Quantidade de Convidados:</strong> <span id="quantConvidados"></span></p>
+
+	<h2>Anfitrião</h2>
+	<p><strong>Nome do Anfitrião:</strong> <span id="anfitriaoNome"></span></p>
+
+	<h2>Presentes Cadastrados</h2>
+	<ul id="listaPresentes"></ul>
+
+	<button onclick="criarNovoEvento()">Criar Novo Evento</button>
+
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+			// Pegando o ID do evento da URL
+			const urlParams = new URLSearchParams(window.location.search);
+			const eventoId = urlParams.get("eventoId");
+
+			if (!eventoId) {
+				alert("Erro: Evento não encontrado!");
+				return;
+			}
+
+			// Buscando os detalhes do evento
+			fetch(`/api/eventos/${eventoId}`)
+				.then(response => response.json())
+				.then(data => {
+					console.log("Evento carregado:", data);
+
+					// Preenchendo os campos com os dados do evento
+					document.getElementById("nomeEvento").textContent = data.nomeEvento;
+					document.getElementById("enderecoEvento").textContent = data.enderecoEvento;
+					document.getElementById("quantConvidados").textContent = data.quantConvidados;
+					document.getElementById("anfitriaoNome").textContent = data.anfitriao.nome;
+
+					// Preenchendo a lista de presentes
+					const listaPresentes = document.getElementById("listaPresentes");
+					data.sugestoesPresentes.forEach(presente => {
+						const li = document.createElement("li");
+						li.textContent = presente.nome;
+						listaPresentes.appendChild(li);
+					});
+
+					// Salvando ID do anfitrião no localStorage
+					localStorage.setItem("anfitriaoId", data.anfitriao.id);
+					console.log("ID do anfitrião salvo:", localStorage.getItem("anfitriaoId"));
+				})
+				.catch(error => {
+					console.error("Erro ao carregar evento:", error);
+					alert("Erro ao carregar evento.");
+				});
+		});
+
+		function criarNovoEvento() {
+			const anfitriaoId = localStorage.getItem("anfitriaoId");
+
+			if (!anfitriaoId) {
+				alert("Erro: ID do anfitrião não encontrado. Faça login novamente.");
+				return;
+			}
+
+			window.location.href = `/evento/novo?anfitriaoId=${anfitriaoId}`;
+		}
+	</script>
+</body>
+
+</html>

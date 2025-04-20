@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Presentes</title>
+</head>
+<body>
+    <h1>Cadastro de Sugestões de Presentes</h1>
+    
+    <!-- Passando o eventoId corretamente via Thymeleaf -->
+    <input type="hidden" id="eventoId" name="eventoId" th:value="${eventoId}">
+
+    <form id="presenteForm">
+        <label for="nomePresente">Nome do Presente:</label>
+        <input type="text" id="nomePresente" name="nome" required>
+        <button type="submit">Adicionar Presente</button>
+    </form>
+
+    <h2>Lista de Presentes</h2>
+    <ul id="listaPresentes">
+        <!-- Os presentes cadastrados aparecerão aqui -->
+    </ul>
+
+    <button id="btnConcluir">Concluir</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const eventoId = document.getElementById("eventoId").value;
+            const lista = document.getElementById("listaPresentes");
+            const form = document.getElementById("presenteForm");
+            const btnConcluir = document.getElementById("btnConcluir");
+
+            console.log("Evento ID:", eventoId);  // Verificar se está pegando o eventoId corretamente
+
+            // Função para carregar presentes
+            function carregarPresentes() {
+                fetch(`/api/presentes?eventoId=` + encodeURIComponent(eventoId))
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Erro ao buscar presentes");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        lista.innerHTML = "";
+                        data.forEach(presente => {
+                            const item = document.createElement("li");
+                            item.textContent = presente.nome;
+                            lista.appendChild(item);
+                        });
+                    })
+                    .catch(error => console.error("Erro ao buscar presentes:", error));
+            }
+
+            // Envio do formulário para adicionar presente
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                const nomePresente = document.getElementById("nomePresente").value;
+
+                fetch("/api/presentes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nome: nomePresente, eventoId: eventoId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Erro ao adicionar presente");
+                    }
+                    return response.json();  // Espera a resposta do servidor com o novo presente
+                })
+                .then(data => {
+                    // Cria o item da lista com o nome do presente retornado
+                    const item = document.createElement("li");
+                    item.textContent = data.nome;  // Usa o nome do presente retornado
+                    lista.appendChild(item);
+
+                    document.getElementById("nomePresente").value = "";  // Limpar o campo de input
+                })
+                .catch(error => console.error("Erro ao adicionar presente:", error));
+            });
+
+            // Concluir e redirecionar para o resumo do evento
+            btnConcluir.addEventListener("click", function () {
+                window.location.href = `/evento/resumo?eventoId=` + encodeURIComponent(eventoId);
+            });
+
+            carregarPresentes();  // Carregar a lista de presentes ao carregar a página
+        });
+    </script>
+</body>
+</html>
